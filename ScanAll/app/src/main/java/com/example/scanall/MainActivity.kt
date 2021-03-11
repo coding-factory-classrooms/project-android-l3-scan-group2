@@ -1,10 +1,12 @@
 package com.example.scanall
 
 import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -14,6 +16,7 @@ import com.budiyev.android.codescanner.DecodeCallback
 import com.budiyev.android.codescanner.ErrorCallback
 import com.budiyev.android.codescanner.ScanMode
 import com.example.scanall.databinding.ActivityMainBinding
+import com.example.scanall.scanAllList.ProduitActivity
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import okhttp3.*
@@ -25,6 +28,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding           //on déclare notre binding
     private lateinit var codeScanner:CodeScanner                //on déclare notre variable codeScanner
+    private lateinit var code:String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +37,10 @@ class MainActivity : AppCompatActivity() {
 
         setupPermissions()
         codeScanner()
+    }
+
+    private fun setText(text: TextView, value: String) {
+        runOnUiThread { text.text = value }
     }
 
     private fun codeScanner(){                                 //méthoode pour gérer la camera(autoFocus,camera_back,flas désactivé...)
@@ -47,8 +55,31 @@ class MainActivity : AppCompatActivity() {
 
             decodeCallback= DecodeCallback {                  //Le DecodeCallback nous renvoie la valeur du scan
                 runOnUiThread{
-                    binding.tvTextView.text="code: ${it.text}"
+                    code=it.text
+                    binding.tvTextView.text= "code: ${it.text}"
                     //
+                    val url= "https://world.openfoodfacts.org/api/v0/product/$code.json"
+                    val request=Request.Builder().url(url).build()
+                    val client=OkHttpClient()
+                    client.newCall(request).enqueue(object :Callback{
+                        override fun onResponse(call: Call?, response: Response?) {
+                            val body=response?.body()?.string()
+                            //Log.e("onResponse","${body}")
+
+                            var gson = Gson()
+                            var bodyIsParse = gson?.fromJson(body, ParseDataClass.Enter::class.java)
+
+                            //this@MainActivity.runOnUiThread(java.lang.Runnable {
+                                //binding.tvTextView.text= "code: ${bodyIsParse.code}"
+                                //binding.tvTextViewBrand.text= "titre: ${bodyIsParse.product.brands}"
+                            //})
+                            setText(binding.tvTextViewBrand,bodyIsParse.product.brands)
+                            //Log.e("onResponseParseData","${bodyIsParse}")
+                        }
+                        override fun onFailure(call: Call?, e: IOException?) {
+                            Log.e("onFailure","Failed to execute request")
+                        }
+                    })
                 }
             }
 
@@ -66,24 +97,10 @@ class MainActivity : AppCompatActivity() {
         //
         binding.buttonSimulate.setOnClickListener {//permet d'affecter une valeur en dur
             binding.tvTextView.text="code: 3263855094175"
-            //
-            val url= "https://world.openfoodfacts.org/api/v0/product/3700009269114.json"
-            val request=Request.Builder().url(url).build()
-            val client=OkHttpClient()
-            client.newCall(request).enqueue(object :Callback{
-                override fun onResponse(call: Call?, response: Response?) {
-                    val body=response?.body()?.string()
-                    Log.e("onResponse","${body}")
+        }
 
-                    var gson = Gson()
-                    var bodyIsParse = gson?.fromJson(body, ParseDataClass.Enter::class.java)
-
-                    Log.e("onResponseParseData","${bodyIsParse}")
-                }
-                override fun onFailure(call: Call?, e: IOException?) {
-                    Log.e("onFailure","Failed to execute request")
-                }
-            })
+        binding.buttonList.setOnClickListener {
+            startActivity(Intent(this, ProduitActivity::class.java))
         }
     }
 
@@ -112,7 +129,7 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    fun onRequestPermissionsResul(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         when(requestCode){
             CAMERA_REQUEST_CODE->{
                 if(grantResults.isEmpty() || grantResults[0] !=PackageManager.PERMISSION_GRANTED){

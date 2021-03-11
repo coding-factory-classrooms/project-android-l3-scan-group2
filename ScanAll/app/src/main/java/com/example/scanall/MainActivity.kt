@@ -111,7 +111,8 @@ class MainActivity : AppCompatActivity() {
         CAMERA_REQUEST_CODE)
     }
 
-    override  fun onRequestPermissionsResult(requestCode:Int,permissions:Array<out String>,grantResults:IntArray){ //en cas de refus des permission on affiche un toast
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         when(requestCode){
             CAMERA_REQUEST_CODE->{
                 if(grantResults.isEmpty() || grantResults[0] !=PackageManager.PERMISSION_GRANTED){

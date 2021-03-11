@@ -14,6 +14,10 @@ import com.budiyev.android.codescanner.DecodeCallback
 import com.budiyev.android.codescanner.ErrorCallback
 import com.budiyev.android.codescanner.ScanMode
 import com.example.scanall.databinding.ActivityMainBinding
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import okhttp3.*
+import java.io.IOException
 
 private const val CAMERA_REQUEST_CODE=101
 
@@ -44,6 +48,7 @@ class MainActivity : AppCompatActivity() {
             decodeCallback= DecodeCallback {                  //Le DecodeCallback nous renvoie la valeur du scan
                 runOnUiThread{
                     binding.tvTextView.text="code: ${it.text}"
+                    //
                 }
             }
 
@@ -61,6 +66,24 @@ class MainActivity : AppCompatActivity() {
         //
         binding.buttonSimulate.setOnClickListener {//permet d'affecter une valeur en dur
             binding.tvTextView.text="code: 3263855094175"
+            //
+            val url= "https://world.openfoodfacts.org/api/v0/product/3700009269114.json"
+            val request=Request.Builder().url(url).build()
+            val client=OkHttpClient()
+            client.newCall(request).enqueue(object :Callback{
+                override fun onResponse(call: Call?, response: Response?) {
+                    val body=response?.body()?.string()
+                    Log.e("onResponse","${body}")
+
+                    var gson = Gson()
+                    var bodyIsParse = gson?.fromJson(body, ParseDataClass.Enter::class.java)
+
+                    Log.e("onResponseParseData","${bodyIsParse}")
+                }
+                override fun onFailure(call: Call?, e: IOException?) {
+                    Log.e("onFailure","Failed to execute request")
+                }
+            })
         }
     }
 

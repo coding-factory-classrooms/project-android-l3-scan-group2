@@ -1,18 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <com.budiyev.android.codescanner.CodeScannerView
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:id="@+id/scanner_view"
+        app:autoFocusButtonColor="@android:color/white"
+        app:autoFocusButtonVisible="true"
+        app:flashButtonColor="@android:color/white"
+        app:flashButtonVisible="true"
+        app:maskColor="#6C000000"/>
+
     <TextView
+        android:id="@+id/tv_textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_below="@+id/scanner_view"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="20dp"
+        android:text="Scan something..."
+        android:textColor="@android:color/black"/>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <TextView
+        android:id="@+id/tv_textViewBrand"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/scanner_view"
+        android:layout_centerHorizontal="true"
+        android:layout_margin="40dp"
+        android:text="Titre: "
+        android:textColor="@android:color/black"/>
+
+    <Button
+        android:id="@+id/buttonSimulate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tv_textView"
+        android:layout_alignStart="@+id/tv_textView"
+        android:layout_alignEnd="@+id/tv_textView"
+        android:layout_marginStart="-13dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="-17dp"
+        android:text="Simulate" />
+
+    <Button
+        android:id="@+id/buttonList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/buttonSimulate"
+        android:layout_alignStart="@+id/tv_textView"
+        android:layout_alignEnd="@+id/tv_textView"
+        android:layout_marginStart="-13dp"
+        android:layout_marginTop="1dp"
+        android:layout_marginEnd="-17dp"
+        android:text="List" />
+
+
+
+</RelativeLayout>

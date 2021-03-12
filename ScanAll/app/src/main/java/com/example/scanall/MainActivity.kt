@@ -1,41 +1,74 @@
 package com.example.scanall
 
-import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
 import com.budiyev.android.codescanner.AutoFocusMode
 import com.budiyev.android.codescanner.CodeScanner
 import com.budiyev.android.codescanner.DecodeCallback
 import com.budiyev.android.codescanner.ErrorCallback
 import com.budiyev.android.codescanner.ScanMode
+import com.example.scanall.model.Produit
+import com.example.scanall.viewmodel.ProduitViewModel
 import com.example.scanall.databinding.ActivityMainBinding
+import com.example.scanall.model.ParseDataClass
+import com.example.scanall.scanAllList.ProduitActivity
 import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import okhttp3.*
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
 
 private const val CAMERA_REQUEST_CODE=101
 
+//Main permet de scanner et de naviguer vers la liste
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityMainBinding           //on déclare notre binding
-    private lateinit var codeScanner:CodeScanner                //on déclare notre variable codeScanner
+    //on déclare notre binding
+    private lateinit var binding: ActivityMainBinding
+    //on déclare notre variable codeScanner
+    private lateinit var codeScanner:CodeScanner
+    private lateinit var code:String
+    private lateinit var mProduitViewModel: ProduitViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding= ActivityMainBinding.inflate(layoutInflater)   //on vas chercher notre layout
-        setContentView(binding.root)                           //maitenant on peut utiliser le binding avec le layout Activity_Main
+        //on vas chercher notre layout
+        binding= ActivityMainBinding.inflate(layoutInflater)
+        //maitenant on peut utiliser le binding avec le layout Activity_Main
+        setContentView(binding.root)
 
+        mProduitViewModel=ViewModelProvider(this).get(ProduitViewModel::class.java)
         setupPermissions()
         codeScanner()
     }
 
-    private fun codeScanner(){                                 //méthoode pour gérer la camera(autoFocus,camera_back,flas désactivé...)
+    //permet d'affecter a notre texteview la valeur du scan
+    private fun setText(text: TextView, value: String) {
+        runOnUiThread { text.text = value }
+    }
+
+    //permet d'obtenir la date d'aujourd'hui
+    fun Date.toString(format: String, locale: Locale = Locale.getDefault()): String {
+        val formatter = SimpleDateFormat(format, locale)
+        return formatter.format(this)
+    }
+
+    //permet d'insérer les données du scan dans la base de donnée
+    private fun insertDataToDatabase(bodyIsParse: ParseDataClass.Enter){
+        val produit= Produit(0, bodyIsParse.code, bodyIsParse.product.image_front_url, bodyIsParse.product.brands, bodyIsParse.product.ingredients_text, bodyIsParse.product.countries_lc, Calendar.getInstance().time.toString("dd/MM/yyyy"))
+        mProduitViewModel.addProduit(produit)
+    }
+
+    //méthoode pour gérer la camera(autoFocus,camera_back,flas désactivé...)
+    private fun codeScanner(){
         codeScanner = CodeScanner(this, binding.scannerView)
         codeScanner.apply {
             camera=CodeScanner.CAMERA_BACK
@@ -45,59 +78,102 @@ class MainActivity : AppCompatActivity() {
             isAutoFocusEnabled=true
             isFlashEnabled=false
 
-            decodeCallback= DecodeCallback {                  //Le DecodeCallback nous renvoie la valeur du scan
+            //Le DecodeCallback nous renvoie la valeur du scan
+            decodeCallback= DecodeCallback {
                 runOnUiThread{
-                    binding.tvTextView.text="code: ${it.text}"
+                    code=it.text
+                    binding.tvTextView.text= "code: ${it.text}"
                     //
+                    val url= "https://world.openfoodfacts.org/api/v0/product/$code.json"
+                    val request=Request.Builder().url(url).build()
+                    val client=OkHttpClient()
+                    client.newCall(request).enqueue(object :Callback{
+                        override fun onResponse(call: Call?, response: Response?) {
+                            val body=response?.body()?.string()
+                            //Log.e("onResponse","${body}")
+
+                            var gson = Gson()
+                            var bodyIsParse = gson?.fromJson(body, ParseDataClass.Enter::class.java)
+
+                            //this@MainActivity.runOnUiThread(java.lang.Runnable {
+                                //binding.tvTextView.text= "code: ${bodyIsParse.code}"
+                                //binding.tvTextViewBrand.text= "titre: ${bodyIsParse.product.brands}"
+                            //})
+                            setText(binding.tvTextViewBrand,bodyIsParse.product.brands)
+                            //Log.e("onResponseParseData","${bodyIsParse}")
+
+                            insertDataToDatabase(bodyIsParse)
+                        }
+                        override fun onFailure(call: Call?, e: IOException?) {
+                            Log.e("onFailure","Failed to execute request")
+                        }
+                    })
                 }
             }
 
-            errorCallback= ErrorCallback {                   //Le ErrorCallback nous renvoie l'error du scan
+            //Le ErrorCallback nous renvoie l'error du scan
+            errorCallback= ErrorCallback {
                 runOnUiThread{
                     Log.e("Main","Camera initialization error: ${it.message}")
                 }
             }
 
         }
-        binding.scannerView.setOnClickListener{//quand on clic sur notre camera on peut re-scanner un code
+
+        //quand on clic sur notre camera on peut re-scanner un code
+        binding.scannerView.setOnClickListener{
             codeScanner.startPreview()
         }
 
-        //
-        binding.buttonSimulate.setOnClickListener {//permet d'affecter une valeur en dur
-            binding.tvTextView.text="code: 3263855094175"
+        //permet d'affecter une valeur en dur
+        binding.buttonSimulate.setOnClickListener {
+            binding.tvTextView.text="code: 20143855"
             //
-            val url= "https://world.openfoodfacts.org/api/v0/product/3700009269114.json"
+            val url= "https://world.openfoodfacts.org/api/v0/product/20143855.json"
             val request=Request.Builder().url(url).build()
             val client=OkHttpClient()
             client.newCall(request).enqueue(object :Callback{
                 override fun onResponse(call: Call?, response: Response?) {
                     val body=response?.body()?.string()
-                    Log.e("onResponse","${body}")
+                    //Log.e("onResponse","${body}")
 
                     var gson = Gson()
                     var bodyIsParse = gson?.fromJson(body, ParseDataClass.Enter::class.java)
 
-                    Log.e("onResponseParseData","${bodyIsParse}")
+                    //this@MainActivity.runOnUiThread(java.lang.Runnable {
+                    //binding.tvTextView.text= "code: ${bodyIsParse.code}"
+                    //binding.tvTextViewBrand.text= "titre: ${bodyIsParse.product.brands}"
+                    //})
+                    setText(binding.tvTextViewBrand,bodyIsParse.product.brands)
+                    //Log.e("onResponseParseData","${bodyIsParse}")
+
+                    insertDataToDatabase(bodyIsParse)
                 }
                 override fun onFailure(call: Call?, e: IOException?) {
                     Log.e("onFailure","Failed to execute request")
                 }
             })
         }
+
+        binding.buttonList.setOnClickListener {
+            startActivity(Intent(this, ProduitActivity::class.java))
+        }
     }
 
-    override fun onResume() {                       //si l'application se Resume on peut re-scan un code
+    //si l'application se Resume on peut re-scan un code
+    override fun onResume() {
         super.onResume()
         codeScanner.startPreview()
     }
 
-    override fun onPause() {                       //on relaese les ressource de la camera avant de mettre en pause notre appli
+    //on relaese les ressource de la camera avant de mettre en pause notre appli
+    override fun onPause() {
         codeScanner.releaseResources()
         super.onPause()
     }
 
-    private fun setupPermissions(){                //pour tester les permissions de la camera en réferant notre manifest
+    //pour tester les permissions de la camera en réferant notre manifest
+    private fun setupPermissions(){
         val permission:Int=ContextCompat.checkSelfPermission(this,
         android.Manifest.permission.CAMERA)
 
@@ -106,13 +182,15 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private  fun makeRequest(){                 //demande une permission de la camera en réferant notre manifest
+    //demande une permission de la camera en réferant notre manifest
+    private  fun makeRequest(){
         ActivityCompat.requestPermissions(this, arrayOf( android.Manifest.permission.CAMERA),
         CAMERA_REQUEST_CODE)
     }
 
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    //en cas de refus des permissions a la camera
+    fun onRequestPermissionsResul(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         when(requestCode){
             CAMERA_REQUEST_CODE->{
                 if(grantResults.isEmpty() || grantResults[0] !=PackageManager.PERMISSION_GRANTED){

@@ -1,5 +1,6 @@
-package com.example.scanall
+package com.example.scanall.model
 
+//permet de parser notre json
 class ParseDataClass {
 
     data class Enter(
@@ -10,9 +11,7 @@ class ParseDataClass {
     data class Product(
         val image_front_url: String,
         val brands : String ,
-        //val ingredients_text_with_allergens:String,
-        //val ingredients_text_debug:String,
-        val ingredients_text:String
-        //val ingredients_text_en_imported:String
+        val ingredients_text:String,
+        val countries_lc:String
     )
 }

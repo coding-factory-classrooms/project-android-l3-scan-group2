@@ -1,38 +1,26 @@
 package com.example.scanall.scanAllList
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import androidx.activity.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.scanall.Produit
-import com.example.scanall.R
-import com.example.scanall.databinding.ActivityMainBinding
+import com.example.scanall.ProductDetail.ProductDetailActivity
+import com.example.scanall.model.Produit
+import com.example.scanall.viewmodel.ProduitViewModel
 import com.example.scanall.databinding.ActivityProduitBinding
-import com.example.scanall.databinding.ItemProduitBinding
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
-import retrofit2.http.GET
 
-class ProduitActivity : AppCompatActivity() {
+//Permet d'afficher la liste des produits
+class ProduitActivity : AppCompatActivity(),OnItemClickListener {
     //affichage de nos produits
     //initialisation de notre viewModels
-    private val model: ScanAllListViewModel by viewModels()
     private lateinit var binding: ActivityProduitBinding
     private  lateinit var adapter: ProduitAdapter
-    /*private val products = listOf<Produit>(
-        Produit("riz", "riz poulet piment", "12/12/2006", 12342567, "link"),
-        Produit("riz", "riz poulet piment", "12/12/2006", 12342567, "link"),
-        Produit("riz", "riz poulet piment", "12/12/2006", 12342567, "link"),
-        Produit("riz", "riz poulet piment", "12/12/2006", 12342567, "link"),
-        Produit("riz", "riz poulet piment", "12/12/2006", 12342567, "link"),
-        Produit("riz", "riz poulet piment", "12/12/2006", 12342567, "link"),
-        Produit("riz", "riz poulet piment", "12/12/2006", 12342567, "link")
-    )*/
+
+    //viewmodel
+    private lateinit var mProduitViewModel: ProduitViewModel
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,25 +28,45 @@ class ProduitActivity : AppCompatActivity() {
         binding = ActivityProduitBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        //Affiche le backButton
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setTitle("Produit")
 
+        var recyclerview = binding.produitRecyclerview
         //abonnement sur les évenements de notre viewModels
-        model.getProduitLiveData().observe(this, Observer { products -> productUpdated(products!!)})
-        //utilisation de notre adapter
-        //adapter = ProduitAdapter(products)
+        adapter = ProduitAdapter(listOf(),this)
+        recyclerview.adapter = adapter
+        recyclerview.layoutManager = LinearLayoutManager(this)
 
-        adapter = ProduitAdapter(listOf())
+        mProduitViewModel = ViewModelProvider(this).get(ProduitViewModel::class.java)
+        mProduitViewModel.readAllData.observe(this, Observer { Produit -> adapter.updateDataSet(Produit) })
 
-        binding.produitRecyclerview.adapter = adapter
-        binding.produitRecyclerview.layoutManager = LinearLayoutManager(this)
-
-        //chargement de nos données
-        model.loadProduit()
 
     }
 
-    private fun productUpdated(produits: List<Produit>) {
+    private fun productUpdated(Produit: List<Produit>) {
         //creation d'une fuction pour mettre à jour nos datas
-        adapter.updateDataSet(produits)
+        adapter.updateDataSet(Produit)
 
+    }
+
+    //permet de naviguer au click d'un item
+    override fun onItemClick(produit: Produit, position: Int) {
+        val intent = Intent(this, ProductDetailActivity::class.java)
+        //intent.putExtra("name", dataProduit.produitName)
+        intent.putExtra("code", produit.code)
+        intent.putExtra("imageURL", produit.image_front_url)
+        intent.putExtra("nom", produit.brands)
+        intent.putExtra("ingredient", produit.ingredients_text)
+        intent.putExtra("countrie", produit.countries_lc)
+        intent.putExtra("date", produit.date_scan)
+        startActivity(intent)
+    }
+
+    //Gère le retour au backButton
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return super.onSupportNavigateUp()
     }
 }

@@ -3,16 +3,17 @@ package com.example.scanall.scanAllList
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.scanall.Produit
+import com.bumptech.glide.Glide
+import com.example.scanall.model.Produit
 import com.example.scanall.databinding.ItemProduitBinding
 
 //adapter pour la gestion des données
-class ProduitAdapter(private var produits : List<Produit>)
+class ProduitAdapter(private var produits : List<Produit>, private val mListener: OnItemClickListener?)
     : RecyclerView.Adapter<ProduitAdapter.ViewHolder>() {
 
     //notre class view holder avec ununique attribut binding
     class ViewHolder(val binding: ItemProduitBinding) : RecyclerView.ViewHolder(binding.root)
-
+//startActivity(Intent(this, ProduitActivity::class.java))
 
     //utilisation de l'interface avec le binding
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -27,10 +28,13 @@ class ProduitAdapter(private var produits : List<Produit>)
         //récupération de la position des produits
         val produit = produits[position]
         //with
+        holder.itemView.setOnClickListener{
+            mListener?.onItemClick(produit,position)
+        }
         with(holder.binding){
-            titreProduitTextView.text = produit.title
-            produitCodeBareTextView.text = produit.codebare.toString()
-            descriptionProduitTextView.text = produit.description
+            Glide.with(this.imageView).load("${produit.image_front_url}").into(imageView)
+            produitCodeBareTextView.text = produit.countries_lc
+            descriptionProduitTextView.text = produit.brands
         }
     }
 
@@ -42,4 +46,9 @@ class ProduitAdapter(private var produits : List<Produit>)
         notifyDataSetChanged()
     }
 
+}
+
+//interface pour gérer le click
+interface OnItemClickListener {
+    fun onItemClick(produit: Produit, position: Int)
 }

@@ -1,38 +1,31 @@
 package com.example.scanall.scanAllList
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.scanall.Produit
-import com.example.scanall.R
-import com.example.scanall.databinding.ActivityMainBinding
+import com.example.scanall.ProfileDetail
+import com.example.scanall.data.DataProduit
+import com.example.scanall.data.ProduitViewModel
 import com.example.scanall.databinding.ActivityProduitBinding
-import com.example.scanall.databinding.ItemProduitBinding
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
-import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
 
-class ProduitActivity : AppCompatActivity() {
+class ProduitActivity : AppCompatActivity(), onClickItem {
     //affichage de nos produits
     //initialisation de notre viewModels
-    private val model: ScanAllListViewModel by viewModels()
     private lateinit var binding: ActivityProduitBinding
     private  lateinit var adapter: ProduitAdapter
-    /*private val products = listOf<Produit>(
-        Produit("riz", "riz poulet piment", "12/12/2006", 12342567, "link"),
-        Produit("riz", "riz poulet piment", "12/12/2006", 12342567, "link"),
-        Produit("riz", "riz poulet piment", "12/12/2006", 12342567, "link"),
-        Produit("riz", "riz poulet piment", "12/12/2006", 12342567, "link"),
-        Produit("riz", "riz poulet piment", "12/12/2006", 12342567, "link"),
-        Produit("riz", "riz poulet piment", "12/12/2006", 12342567, "link"),
-        Produit("riz", "riz poulet piment", "12/12/2006", 12342567, "link")
-    )*/
+
+    //viewmodel
+    private lateinit var mProduitViewModel: ProduitViewModel
+
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,25 +33,32 @@ class ProduitActivity : AppCompatActivity() {
         binding = ActivityProduitBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-
+        var recyclerview = binding.produitRecyclerview
         //abonnement sur les évenements de notre viewModels
-        model.getProduitLiveData().observe(this, Observer { products -> productUpdated(products!!)})
-        //utilisation de notre adapter
-        //adapter = ProduitAdapter(products)
+        adapter = ProduitAdapter(listOf(), this)
+        recyclerview.adapter = adapter
+        recyclerview.layoutManager = LinearLayoutManager(this)
 
-        adapter = ProduitAdapter(listOf())
-
-        binding.produitRecyclerview.adapter = adapter
-        binding.produitRecyclerview.layoutManager = LinearLayoutManager(this)
-
-        //chargement de nos données
-        model.loadProduit()
+        mProduitViewModel = ViewModelProvider(this).get(ProduitViewModel::class.java)
+        mProduitViewModel.readAllData.observe(this, Observer { dataProduit -> adapter.updateDataSet(dataProduit) })
 
     }
-
-    private fun productUpdated(produits: List<Produit>) {
+    private fun productUpdated(dataProduit: List<DataProduit>) {
         //creation d'une fuction pour mettre à jour nos datas
-        adapter.updateDataSet(produits)
+        adapter.updateDataSet(dataProduit)
 
     }
+
+    override fun onClick(dataProduit: DataProduit, position: Int) {
+        //Toast.makeText(this, "the message ${dataProduit.produitCodeBare.toString()}", Toast.LENGTH_LONG).show()
+        Log.i("ProduitActivity", "onClick: the message ${dataProduit.produitCodeBare}")
+        val intent = Intent(this, ProfileDetail::class.java)
+        //intent.putExtra("name", dataProduit.produitName)
+        intent.putExtra("description", dataProduit.produitDescription)
+        intent.putExtra("code", dataProduit.produitCodeBare)
+        intent.putExtra("ingredients", dataProduit.produitIngredients)
+        startActivity(intent)
+    }
+
+
 }

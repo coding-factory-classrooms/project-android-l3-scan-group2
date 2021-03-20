@@ -4,33 +4,31 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.example.scanall.model.Produit
 
-//abstract class who extend room
-//database creation with entities class
-@Database(entities = [DataProduit::class], version = 1, exportSchema = false)
-abstract class ProduitDataBase: RoomDatabase() {
-    //fun to return our product
-    abstract fun produitsDao(): ProduitDao
+//répresente notre databse en fonction du type de dataclass
+@Database(entities = [Produit::class], version = 1,exportSchema = false)
+abstract class ProduitDataBase:RoomDatabase() {
 
-    //make our data base singleton visible
+    abstract fun produitDao():ProduitDao
+
+    //verification de instance ProduitDataBase
     companion object{
         @Volatile
-        private  var INSTANCE: ProduitDataBase? = null
+        private var INSTANCE:ProduitDataBase?=null
 
-        fun getDataBase(context : Context): ProduitDataBase{
-            val tempInstance = INSTANCE
-            if(tempInstance !=  null)
-            {
-                return tempInstance
+        fun getDatabase(context: Context):ProduitDataBase{
+            val tempInstance= INSTANCE
+            if(tempInstance!=null){
+                return  tempInstance
             }
-            //creation d'un nouveau instance and de notre database
             synchronized(this){
-                val instance = Room.databaseBuilder(
+                val instance= Room.databaseBuilder(
                     context.applicationContext,
                     ProduitDataBase::class.java,
-                    "produitDatabase"
+                    "produit_database"
                 ).build()
-                INSTANCE = instance
+                INSTANCE=instance
                 return instance
             }
         }

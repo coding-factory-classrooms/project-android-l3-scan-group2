@@ -3,21 +3,16 @@ package com.example.scanall.scanAllList
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import android.view.Menu
-import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.scanall.ProfileDetail
-import com.example.scanall.data.DataProduit
-import com.example.scanall.data.ProduitViewModel
+import com.example.scanall.ProductDetail.ProductDetailActivity
+import com.example.scanall.model.Produit
+import com.example.scanall.viewmodel.ProduitViewModel
 import com.example.scanall.databinding.ActivityProduitBinding
-import retrofit2.converter.moshi.MoshiConverterFactory
-import retrofit2.http.GET
 
-class ProduitActivity : AppCompatActivity(), onClickItem {
+//Permet d'afficher la liste des produits
+class ProduitActivity : AppCompatActivity(),OnItemClickListener {
     //affichage de nos produits
     //initialisation de notre viewModels
     private lateinit var binding: ActivityProduitBinding
@@ -33,32 +28,45 @@ class ProduitActivity : AppCompatActivity(), onClickItem {
         binding = ActivityProduitBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        //Affiche le backButton
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setTitle("Produit")
+
         var recyclerview = binding.produitRecyclerview
         //abonnement sur les évenements de notre viewModels
-        adapter = ProduitAdapter(listOf(), this)
+        adapter = ProduitAdapter(listOf(),this)
         recyclerview.adapter = adapter
         recyclerview.layoutManager = LinearLayoutManager(this)
 
         mProduitViewModel = ViewModelProvider(this).get(ProduitViewModel::class.java)
-        mProduitViewModel.readAllData.observe(this, Observer { dataProduit -> adapter.updateDataSet(dataProduit) })
+        mProduitViewModel.readAllData.observe(this, Observer { Produit -> adapter.updateDataSet(Produit) })
+
 
     }
-    private fun productUpdated(dataProduit: List<DataProduit>) {
+
+    private fun productUpdated(Produit: List<Produit>) {
         //creation d'une fuction pour mettre à jour nos datas
-        adapter.updateDataSet(dataProduit)
+        adapter.updateDataSet(Produit)
 
     }
 
-    override fun onClick(dataProduit: DataProduit, position: Int) {
-        //Toast.makeText(this, "the message ${dataProduit.produitCodeBare.toString()}", Toast.LENGTH_LONG).show()
-        Log.i("ProduitActivity", "onClick: the message ${dataProduit.produitCodeBare}")
-        val intent = Intent(this, ProfileDetail::class.java)
+    //permet de naviguer au click d'un item
+    override fun onItemClick(produit: Produit, position: Int) {
+        val intent = Intent(this, ProductDetailActivity::class.java)
         //intent.putExtra("name", dataProduit.produitName)
-        intent.putExtra("description", dataProduit.produitDescription)
-        intent.putExtra("code", dataProduit.produitCodeBare)
-        intent.putExtra("ingredients", dataProduit.produitIngredients)
+        intent.putExtra("code", produit.code)
+        intent.putExtra("imageURL", produit.image_front_url)
+        intent.putExtra("nom", produit.brands)
+        intent.putExtra("ingredient", produit.ingredients_text)
+        intent.putExtra("countrie", produit.countries_lc)
+        intent.putExtra("date", produit.date_scan)
         startActivity(intent)
     }
 
-
+    //Gère le retour au backButton
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return super.onSupportNavigateUp()
+    }
 }

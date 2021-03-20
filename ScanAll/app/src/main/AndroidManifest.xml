@@ -12,7 +12,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.ScanAll">
-        <activity android:name=".ProfileDetail"></activity>
+        <activity android:name=".ProductDetail.ProductDetailActivity"></activity>
         <activity android:name=".scanAllList.ProduitActivity" />
         <activity android:name=".MainActivity">
             <intent-filter>

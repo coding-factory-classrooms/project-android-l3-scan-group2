@@ -1,20 +1,21 @@
 package com.example.scanall.data
 
 import androidx.lifecycle.LiveData
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import com.example.scanall.model.Produit
 
-//data access methods is here
+
+//contient les méthode pour les requêtes
+
 @Dao
 interface ProduitDao {
+    //si le produit est déjà dans la base il ignore
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    //fun to add produit
-    suspend fun addProduit(dataProduit: DataProduit)
+    suspend fun addProduit(produit: Produit)
 
-    //delet produit
-    @Delete
-    suspend fun deleteProduit(dataProduit: DataProduit)
-
-    //fun to read all data with a query table produits dans DataProduit
-    @Query("SELECT * FROM produits ORDER BY id ASC")
-    fun readAllData(): LiveData<List<DataProduit>>
+    @Query("SELECT * FROM produit_table")
+    fun readAllData():LiveData<List<Produit>>
 }

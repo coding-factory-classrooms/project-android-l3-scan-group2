@@ -16,7 +16,7 @@ import com.example.scanall.databinding.ActivityProfileDetailBinding
 class ProfileDetail : AppCompatActivity() {
     //binding
     lateinit var binding : ActivityProfileDetailBinding
-    private lateinit var mProduitViewModel: ProduitViewModel
+    //private lateinit var mProduitViewModelView: ProduitViewModel
     lateinit var id:DataProduit
 
 

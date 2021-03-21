@@ -23,7 +23,12 @@
         android:id="@+id/tv_textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_below="@+id/tv_textViewBrand"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="63dp"
+        android:layout_marginTop="68dp"
+        android:layout_marginEnd="51dp"
+        android:layout_toEndOf="@+id/buttonSimulate"
         android:text="Scan something..."
         android:textAlignment="center"
         android:textColor="@color/purple_500"
@@ -46,12 +51,10 @@
         android:id="@+id/buttonSimulate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/tv_textView"
-        android:layout_alignStart="@+id/tv_textView"
-        android:layout_alignEnd="@+id/tv_textView"
-        android:layout_marginStart="-13dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="-17dp"
+        android:layout_below="@+id/scanner_view"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="76dp"
+        android:layout_marginTop="106dp"
         android:text="Simulate" />
 
     <Button
@@ -59,13 +62,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/buttonSimulate"
-        android:layout_alignStart="@+id/tv_textView"
-        android:layout_alignEnd="@+id/tv_textView"
-        android:layout_marginStart="-13dp"
-        android:layout_marginTop="1dp"
-        android:layout_marginEnd="-17dp"
+        android:layout_alignStart="@+id/buttonSimulate"
+        android:layout_alignEnd="@+id/buttonSimulate"
+        android:layout_marginStart="7dp"
+        android:layout_marginTop="21dp"
+        android:layout_marginEnd="12dp"
         android:text="List" />
-
 
 
 </RelativeLayout>

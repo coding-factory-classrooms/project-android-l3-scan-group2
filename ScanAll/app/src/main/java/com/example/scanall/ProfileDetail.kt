@@ -49,6 +49,6 @@ class ProfileDetail : AppCompatActivity() {
     }
 
     private fun deleteProduit() {
-    mProduitViewModel.deleteProduitVModel(id)
+    //mProduitViewModel.deleteProduitVModel()
     }
 }

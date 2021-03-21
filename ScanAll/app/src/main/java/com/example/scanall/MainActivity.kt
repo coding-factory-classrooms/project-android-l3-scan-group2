@@ -33,13 +33,6 @@ private const val CAMERA_REQUEST_CODE=101
 //Main permet de scanner et de naviguer vers la liste
 class MainActivity : AppCompatActivity() {
 
-    //on déclare notre binding
-    private lateinit var binding: ActivityMainBinding
-    //on déclare notre variable codeScanner
-    private lateinit var codeScanner:CodeScanner
-    private lateinit var code:String
-    private lateinit var mProduitViewModel: ProduitViewModel
-
     private lateinit var mProduitViewModelView: ProduitViewModel
     private lateinit var binding: ActivityMainBinding          //on déclare notre binding
     private lateinit var codeScanner:CodeScanner
@@ -53,7 +46,7 @@ class MainActivity : AppCompatActivity() {
         //maitenant on peut utiliser le binding avec le layout Activity_Main
         setContentView(binding.root)
 
-        mProduitViewModel=ViewModelProvider(this).get(ProduitViewModel::class.java)
+        mProduitViewModelView = ViewModelProvider(this).get(ProduitViewModel::class.java)
         setupPermissions()
         codeScanner()
     }
@@ -72,7 +65,7 @@ class MainActivity : AppCompatActivity() {
     //permet d'insérer les données du scan dans la base de donnée
     private fun insertDataToDatabase(bodyIsParse: ParseDataClass.Enter){
         val produit= Produit(0, bodyIsParse.code, bodyIsParse.product.image_front_url, bodyIsParse.product.brands, bodyIsParse.product.ingredients_text, bodyIsParse.product.countries_lc, Calendar.getInstance().time.toString("dd/MM/yyyy"))
-        mProduitViewModel.addProduit(produit)
+        mProduitViewModelView.addProduit(produit)
     }
 
     //méthoode pour gérer la camera(autoFocus,camera_back,flas désactivé...)

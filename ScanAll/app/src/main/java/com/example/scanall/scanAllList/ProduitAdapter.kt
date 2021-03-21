@@ -30,7 +30,7 @@ class ProduitAdapter(private var produits : List<Produit>, private val mListener
     //associer des données à notre interface
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         //récupération de la position des produits
-        val produit = dataProduit[position]
+        val produit = produits[position]
         //with
         holder.itemView.setOnClickListener{
             mListener?.onItemClick(produit,position)
@@ -42,11 +42,11 @@ class ProduitAdapter(private var produits : List<Produit>, private val mListener
         }
     }
 
-    override fun getItemCount(): Int = dataProduit.size
+    override fun getItemCount(): Int = produits.size
 
     //hydratation des donnees
-    fun updateDataSet(dataProduit: List<DataProduit>) {
-        this.dataProduit = dataProduit
+    fun updateDataSet(produits: List<Produit>) {
+        this.produits = produits
         notifyDataSetChanged()
     }
 
@@ -54,5 +54,5 @@ class ProduitAdapter(private var produits : List<Produit>, private val mListener
 
 //interface pour gérer le click
 interface OnItemClickListener {
-    fun onItemClick(produit: Produit, position: Int)
+    fun onItemClick(produits: Produit, position: Int)
 }
